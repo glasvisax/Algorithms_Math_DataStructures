@@ -6,9 +6,6 @@
 #include <iostream>
 #include <stack>
 
-// моя имплементация структуры данных АВЛ дерево
-
-
 template <typename K, typename V>
 class avlmap
 {
@@ -17,11 +14,11 @@ class avlmap
 		Node(K k, const V& v)
 		{
 			key = k;
-			val = v;
+			value = v;
 		}
 
 		K	   key;
-		V	   val;
+		V	   value;
 		Node*  right = nullptr;
 		Node*  left = nullptr;
 		int	   height = -1;
@@ -32,35 +29,40 @@ class avlmap
 	std::stack<size_t> free_indexes;
 
 public:
-	// Выводит структуру дерева в консоль
+	// Prints the tree structure to the console
 	void printTree() const
 	{
 		printTreeRec(root, 0);
 		std::cout << "\n\n";
 	}
 
-	// Поиск значения по ключу
-	V& find(K key);
+	// Adding a Node with a Key and a Value
+	void insert(K key, const V& value);
 
-	// Поиск значения по ключу (константный)
+	// Finding a value by key (constant)
 	V find(K key) const;
 
-	// Удаление значения по ключу
+	// Removing a value by key
 	void remove(K key);
 
+	// Finding a value by key
+	V& find(K key);
 
-	// Добавление узла с ключом и значением
-	void insert(K key, const V& val);
+	// Returns the maximum element of the tree (constant)
+	V& getMax() { return getMaxFrom(root)->value; }
 
-	V& getMax() { return getMaxFrom(root)->val; }
+	// Returns the maximum element of the tree
+	V getMax() const { return getMaxFrom(root)->value; }
 
-	V getMax() const { return getMaxFrom(root)->val; }
+	// Returns the minimum element of the tree
+	V& getMin() { return getMinFrom(root)->value; }
 
-	V& getMin() { return getMinFrom(root)->val; }
-
-	V getMin() const { return getMinFrom(root)->val; }
+	// Returns the minimum element of the tree (constant)
+	V getMin() const { return getMinFrom(root)->value; }
 
 private:
+	Node* create(K key, const V& value);
+
 	Node* getMaxFrom(Node* root);
 
 	Node* getMinFrom(Node* root);
@@ -69,7 +71,7 @@ private:
 
 	void leftRotate(Node* node);
 
-	int tieNode(Node* root, Node* leaf);
+	int tieNode(Node* root, K key, const V& value);
 
 	void balance(Node* root);
 
@@ -92,22 +94,22 @@ template <typename K, typename V>
 V& avlmap<K, V>::find(K key)
 {
 	if (root == nullptr)
-		throw std::exception("root = nullptr");
+		throw std::exception("root is nullptr");
 	Node* n = findRec(key, root);
 	if (n->key != key)
-		throw std::exception("element not exists");
-	return n->val;
+		throw std::exception("element does not exist");
+	return n->value;
 }
 
 template <typename K, typename V>
 V avlmap<K, V>::find(K key) const
 {
 	if (root == nullptr)
-		throw std::exception("root = nullptr");
+		throw std::exception("root is nullptr");
 	Node* n = findRec(key, root);
 	if (n->key != key)
-		throw std::exception("element not exists");
-	return n->val;
+		throw std::exception("element does not exist");
+	return n->value;
 }
 template <typename K, typename V>
 void avlmap<K, V>::remove(K key)
@@ -118,31 +120,14 @@ void avlmap<K, V>::remove(K key)
 }
 
 template <typename K, typename V>
-void avlmap<K, V>::insert(K key, const V& val)
+void avlmap<K, V>::insert(K key, const V& value)
 {
-	Node*  current;
-	size_t current_index;
-	if (free_indexes.size() == 0)
-	{
-		nodes_store.emplace_back(key, val);
-		current = &nodes_store.back();
-		current_index = nodes_store.size() - 1;
-	}
-	else
-	{
-		auto free_addr = &*(nodes_store.begin() + free_indexes.top());
-		current = new (free_addr) Node(key, val);
-		current_index = free_indexes.top();
-		free_indexes.pop();
-	}
-	current->arr_index = current_index;
-	current->height = 0;
 	if (root == nullptr)
 	{
-		root = current;
+		root = create(key, value);
 		return;
 	}
-	tieNode(root, current);
+	tieNode(root, key, value);
 	balance(root);
 }
 
@@ -184,6 +169,29 @@ void avlmap<K, V>::printTreeRec(Node* node, int indent) const
 			printTreeRec(node->left, indent + 4);
 		}
 	}
+}
+
+template <typename K, typename V>
+typename avlmap<K, V>::Node* avlmap<K, V>::create(K key, const V& value)
+{
+	Node*  current;
+	size_t current_index;
+	if (free_indexes.size() == 0)
+	{
+		nodes_store.emplace_back(key, value);
+		current = &nodes_store.back();
+		current_index = nodes_store.size() - 1;
+	}
+	else
+	{
+		auto free_addr = &*(nodes_store.begin() + free_indexes.top());
+		current = new (free_addr) Node(key, value);
+		current_index = free_indexes.top();
+		free_indexes.pop();
+	}
+	current->arr_index = current_index;
+	current->height = 0;
+	return current;
 }
 
 template <typename K, typename V>
@@ -229,18 +237,27 @@ void avlmap<K, V>::leftRotate(Node* node)
 }
 
 template <typename K, typename V>
-int avlmap<K, V>::tieNode(Node* root, Node* leaf)
+int avlmap<K, V>::tieNode(Node* root, K key, const V& value)
 {
-	Node*& current = leaf->key > root->key ? root->right : root->left;
+	if (root->key == key)
+	{
+		return -1;
+	}
+	Node*& current = key > root->key ? root->right : root->left;
 	if (current == nullptr)
 	{
-		current = leaf;
+		current = create(key, value);
 		root->height = std::max(1, root->height);
 		return 1;
 	}
 	else
 	{
-		int new_height = tieNode(current, leaf) + 1;
+		int new_height = tieNode(current, key, value);
+		if (new_height == -1)
+		{
+			return -1;
+		}
+		++new_height;
 		root->height = std::max(new_height, root->height);
 
 		balance(root);
@@ -248,6 +265,7 @@ int avlmap<K, V>::tieNode(Node* root, Node* leaf)
 		return root->height;
 	}
 }
+
 
 template <typename K, typename V>
 void avlmap<K, V>::balance(Node* root)
@@ -290,14 +308,14 @@ int avlmap<K, V>::balanceFactor(Node* node)
 }
 
 template <typename K, typename V>
-void avlmap<K, V>::swapKV(avlmap<K, V>::Node* n1, Node* n2)
+void avlmap<K, V>::swapKV(Node* n1, Node* n2)
 {
 	K k = n1->key;
 	n1->key = n2->key;
 	n2->key = k;
-	V v = n1->val;
-	n1->val = n2->val;
-	n2->val = v;
+	V v = std::move(n1->value);
+	n1->value = std::move(n2->value);
+	n2->value = std::move(v);
 }
 
 template <typename K, typename V>
@@ -344,7 +362,8 @@ void avlmap<K, V>::removeRec(K key, Node*& root)
 		}
 		else
 		{
-			swapKV(getMaxFrom(root->left), root);
+			Node* lmax = getMaxFrom(root->left);
+			swapKV(lmax, root);
 			removeRec(key, root->left);
 			return;
 		}

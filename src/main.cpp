@@ -1,13 +1,42 @@
-﻿#include <iostream>
+﻿
+#define NOMINMAX
+#include <iostream>
 #include "avlmap.h"
 #include "Matrix.h"
 #include "rbmap.h"
 #include <Windows.h>
 #include <map>
+#include "Graph.h"
+
+using namespace lin_alg;
+using namespace graph;
+using namespace graph::tree;
+
+void test_avl_tree();
+void test_matrix();
+void test_rb_tree();
 
 int main()
 {
-	// avl tree map
+	Graph<int> g;
+	g.addEdge(0, 1, 1);	 // A -> B
+	g.addEdge(0, 2, 4);	 // A -> C
+	g.addEdge(1, 2, -2); // B -> C
+	g.addEdge(1, 3, 3);	 // B -> D
+	g.addEdge(2, 3, 2);	 // C -> D
+	
+	auto path = findPath(0, 3, g);
+
+	for (auto& i : path.first)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << "\n"
+			  << path.second;
+}
+
+void test_avl_tree()
+{
 	avlmap<int, std::string> am;
 	am.insert(5, "c");
 	am.insert(2, "c");
@@ -22,16 +51,17 @@ int main()
 	am.remove(9);
 	am.remove(5);
 	am.printTree();
-
 	std::cout << am.find(3) << "\n\n";
+}
 
-	// matrix
-	Matrix<3, 2> a = {	{ 1, 2 },
-						{ 2, 1 },
-						{ 3, 4 } };
+void test_matrix()
+{
+	Matrix<3, 2> a = { { 1, 2 },
+		{ 2, 1 },
+		{ 3, 4 } };
 
-	Matrix<2, 3> b = {	{ 1, 2, 3 },
-						{ 2, 1, 4 } };
+	Matrix<2, 3> b = { { 1, 2, 3 },
+		{ 2, 1, 4 } };
 
 	auto d = a * b;
 
@@ -45,8 +75,10 @@ int main()
 	};
 
 	std::cout << det(y) << "\n\n";
+}
 
-	// red black tree map
+void test_rb_tree()
+{
 	rbmap<int, std::string> rbm;
 	rbm.insert(5, "c");
 	rbm.insert(2, "c");

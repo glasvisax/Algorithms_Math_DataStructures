@@ -1,11 +1,8 @@
-﻿
-#define NOMINMAX
+﻿#define NOMINMAX
 #include <iostream>
 #include "avlmap.h"
 #include "Matrix.h"
 #include "rbmap.h"
-#include <Windows.h>
-#include <map>
 #include "Graph.h"
 
 using namespace lin_alg;
@@ -15,24 +12,77 @@ using namespace graph::tree;
 void test_avl_tree();
 void test_matrix();
 void test_rb_tree();
+void test_graphs();
 
 int main()
 {
-	Graph<int> g;
-	g.addEdge(0, 1, 1);	 // A -> B
-	g.addEdge(0, 2, 4);	 // A -> C
-	g.addEdge(1, 2, -2); // B -> C
-	g.addEdge(1, 3, 3);	 // B -> D
-	g.addEdge(2, 3, 2);	 // C -> D
-	
-	auto path = findPath(0, 3, g);
+	return 0;
+}
 
-	for (auto& i : path.first)
+void test_graphs()
+{
+	// weighted graph
+	WGraph wg1;
+	wg1.addEdge(0, 1, 4);
+	wg1.addEdge(0, 2, 1);
+	wg1.addEdge(1, 3, 1);
+	wg1.addEdge(2, 1, 2);
+	wg1.addEdge(2, 3, 5);
+
+	// dijkstra
+	auto res1 = findPath(0, 3, wg1);
+
+	for (auto i : res1.first)
 	{
 		std::cout << i << " ";
 	}
-	std::cout << "\n"
-			  << path.second;
+	std::cout << "\n";
+
+	WGraph wg2;
+	wg2.addEdge(0, 1, 1);
+	wg2.addEdge(0, 2, 4);
+	wg2.addEdge(1, 2, -2);
+	wg2.addEdge(1, 3, 3);
+	wg2.addEdge(2, 3, 2);
+
+	// bellman-ford
+	auto res2 = findPath(0, 3, wg2);
+
+	for (auto i : res2.first)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << "\n";
+
+	// unweighted graph
+	UGraph<int> ug;
+	ug.addEdge(1, 2);
+	ug.addEdge(1, 3);
+	ug.addEdge(2, 4);
+	ug.addEdge(4, 5);
+	ug.addEdge(4, 10);
+	ug.addEdge(3, 6);
+	ug.addEdge(3, 8);
+	ug.addEdge(3, 7);
+	ug.addEdge(8, 9);
+
+	// bfs
+	auto res3 = findPath(1, 9, ug);
+
+	for (auto i : res3.first)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << "\n";
+
+	// dfs
+	auto res4 = findPath(1, 9, ug, false);
+
+	for (auto i : res4.first)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << "\n";
 }
 
 void test_avl_tree()

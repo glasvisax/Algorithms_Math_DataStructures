@@ -16,7 +16,26 @@ void test_graphs();
 
 int main()
 {
-	return 0;
+	//test_graphs();
+
+		// unweighted graph
+	UGraph<int> ug;
+	ug.addEdge(1, 2);
+	ug.addEdge(1, 3);
+	ug.addEdge(2, 4);
+	ug.addEdge(4, 7);
+	ug.addEdge(4, 8);
+	ug.addEdge(3, 6);
+	ug.addEdge(3, 5);
+
+	// bfs
+	auto res3 = findPath(1, 7, ug, false);
+
+	for (auto i : res3.first)
+	{
+		std::cout << i << " ";
+	}
+	std::cout << "\n";
 }
 
 void test_graphs()
@@ -59,15 +78,13 @@ void test_graphs()
 	ug.addEdge(1, 2);
 	ug.addEdge(1, 3);
 	ug.addEdge(2, 4);
-	ug.addEdge(4, 5);
-	ug.addEdge(4, 10);
+	ug.addEdge(4, 7);
+	ug.addEdge(4, 8);
 	ug.addEdge(3, 6);
-	ug.addEdge(3, 8);
-	ug.addEdge(3, 7);
-	ug.addEdge(8, 9);
+	ug.addEdge(3, 5);
 
 	// bfs
-	auto res3 = findPath(1, 9, ug);
+	auto res3 = findPath(1, 6, ug);
 
 	for (auto i : res3.first)
 	{

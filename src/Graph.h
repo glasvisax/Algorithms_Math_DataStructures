@@ -150,7 +150,6 @@ namespace graph
 			V	  node = vec.back();
 			auto  range = graph.edges_to.equal_range(node);
 			auto  it = range.first;
-
 			if (it == range.second)
 			{
 				goto continue_flow;
@@ -166,14 +165,16 @@ namespace graph
 				next = Graph::getEdgeDirection(it->second);
 			}
 			vec.push_back(next);
+			fifo.push_back(std::move(vec));
+			fifo.pop_front();
 			it++;
 			for (; it != range.second; ++it)
 			{
 				auto next = Graph::getEdgeDirection(it->second);
 				if (nodes_unvisited.find(next) != nodes_unvisited.end())
 				{
-					fifo.push_back(std::vector<V>(fifo[0]));
-					fifo[0][fifo[0].size() - 1] = next;
+					fifo.push_back(std::vector<V>(fifo.back()));
+					fifo.back()[fifo.back().size() - 1] = next;
 				}
 			}
 			nodes_unvisited.erase(node);
@@ -195,6 +196,7 @@ namespace graph
 		fifo.push_front(std::vector<V>(1, from));
 		while (!fifo.empty())
 		{
+
 			auto& vec = fifo.front();
 			V	  node = vec.back();
 			auto  range = graph.edges_to.equal_range(node);
@@ -219,17 +221,19 @@ namespace graph
 			{
 				return vec;
 			}
+			fifo.push_back(std::move(vec));
+			fifo.pop_front();
 			it++;
 			for (; it != range.second; ++it)
 			{
 				auto next = Graph::getEdgeDirection(it->second);
 				if (nodes_unvisited.find(next) != nodes_unvisited.end())
 				{
-					fifo.push_back(std::vector<V>(fifo[0]));
-					fifo[0][fifo[0].size() - 1] = next;
+					fifo.push_back(std::vector<V>(fifo.back()));
+					fifo.back()[fifo.back().size() - 1] = next;
 					if (next == to)
 					{
-						return fifo[0];
+						return fifo.back();
 					}
 				}
 			}

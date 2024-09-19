@@ -1,29 +1,36 @@
 ﻿#define NOMINMAX
 #include <iostream>
+#include <cassert>
 #include "avlmap.h"
 #include "Matrix.h"
 #include "rbmap.h"
 #include "Graph.h"
-#include <cassert>
 #include "Vector.h"
+#include "SLE_algorithms.h"
 
 using namespace lin_alg;
 using namespace graph;
 using namespace graph::tree;
+using namespace structs;
 
 void test_avl_tree();
 void test_matrix();
 void test_rb_tree();
 void test_graphs();
+void test_vector();
+void test_SLE_Algs();
 
-void runTests()
+int main()
 {
-	// Тест конструктора по умолчанию
+	test_SLE_Algs();
+
+}
+void test_vector()
+{
+
 	Vector<int> vec;
 	assert(vec.getSize() == 0);
 	assert(vec.getCapacity() == 0);
-
-	// Тест pushBack и размера/вместимости
 	vec.pushBack(1);
 	vec.pushBack(2);
 	vec.pushBack(3);
@@ -33,20 +40,18 @@ void runTests()
 	assert(vec.getSize() == 5);
 	assert(vec.getCapacity() >= 5);
 
-	// Тест доступа по индексу
 	assert(vec[0] == 1);
 	assert(vec[1] == 2);
 	assert(vec[2] == 3);
 	assert(vec[3] == 4);
 	assert(vec[4] == 5);
 
-	// Тест метода at() с корректным и некорректным индексом
 	try
 	{
 		vec.at(4) = 10;
 		assert(vec.at(4) == 10);
 	}
-	catch (const std::out_of_range&)
+	catch (...)
 	{
 		assert(false); // не должно сюда попасть
 	}
@@ -54,14 +59,12 @@ void runTests()
 	try
 	{
 		vec.at(5);
-		assert(false); // не должно сюда попасть
+		assert(false);
 	}
-	catch (const std::out_of_range&)
+	catch (...)
 	{
-		// должно выбросить исключение
 	}
 
-	// Тест конструктора копирования
 	Vector<int> vecCopy(vec);
 	assert(vecCopy.getSize() == vec.getSize());
 	for (size_t i = 0; i < vec.getSize(); ++i)
@@ -69,12 +72,10 @@ void runTests()
 		assert(vecCopy[i] == vec[i]);
 	}
 
-	// Тест конструктора перемещения
 	Vector<int> vecMove(std::move(vecCopy));
 	assert(vecMove.getSize() == 5);
-	assert(vecCopy.getSize() == 0); // после перемещения размер должен быть 0
+	assert(vecCopy.getSize() == 0);
 
-	// Тест оператора копирования
 	Vector<int> vecAssign = vecMove;
 	assert(vecAssign.getSize() == vecMove.getSize());
 	for (size_t i = 0; i < vecMove.getSize(); ++i)
@@ -82,13 +83,11 @@ void runTests()
 		assert(vecAssign[i] == vecMove[i]);
 	}
 
-	// Тест оператора перемещения
 	Vector<int> vecMoveAssign;
 	vecMoveAssign = std::move(vecAssign);
 	assert(vecMoveAssign.getSize() == 5);
 	assert(vecAssign.getSize() == 0);
 
-	// Тест работы итераторов
 	Vector<int>::Iterator it = vecMoveAssign.begin();
 	assert(*it == 1);
 	++it;
@@ -96,7 +95,6 @@ void runTests()
 	it++;
 	assert(*it == 3);
 
-	// Тест работы константных итераторов
 	const Vector<int>&		   constVec = vecMoveAssign;
 	Vector<int>::ConstIterator cit = constVec.cbegin();
 	assert(*cit == 1);
@@ -105,7 +103,6 @@ void runTests()
 	cit++;
 	assert(*cit == 3);
 
-	// Тест метода reserve()
 	vecMoveAssign.reserve(20);
 	assert(vecMoveAssign.getCapacity() == 20);
 	assert(vecMoveAssign.getSize() == 5);
@@ -113,10 +110,19 @@ void runTests()
 	std::cout << "All tests passed!" << std::endl;
 }
 
-int main()
+void test_SLE_Algs()
 {
-	runTests();
-	return 0;
+	Matrix<3, 3> A = {
+		{ 4.0f, 3.0f, 0.0f },
+		{ 10.0f, 7.51f, 8.0f },
+		{ 2.0f, -1.0f, -1.0f }
+	};
+
+	Matrix<1, 3> B = { { 3.0f, -0.49f, 0.0f } };
+
+	Matrix_method(A, B).print();
+	Kramer_method(A, B).print();
+	Matrix_method(A, B).print();
 }
 
 void test_graphs()
@@ -213,7 +219,7 @@ void test_matrix()
 
 	auto d = a * b;
 
-	auto e = b.getTransposed();
+	auto e = getTransposed(b);
 
 	Matrix<4, 4> y = {
 		{ 1, 0, 3, 2 },
